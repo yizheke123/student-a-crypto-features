@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "student-a-crypto-features"
+version = "0.1.0"
+description = "Student A cryptocurrency feature engineering package for UTS 36120 AT3 Group 26"
+readme = "README.md"
+requires-python = ">=3.12,<3.13"
+
+authors = [
+    {name = "Zheke Yi"}
+]
+
+dependencies = [
+    "pandas==2.2.2"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
