@@ -1,4 +1,4 @@
-"""Student A feature engineering.
+"""Student A features for cryptocurrency performance analysis.
 
 Student: Zheke Yi
 Student ID: 25655150
@@ -13,90 +13,44 @@ Features:
 import pandas as pd
 
 
-REQUIRED_COLUMNS = ["close"]
+def add_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add Student A engineered features.
 
+    Required columns:
+    - token
+    - close
 
-def _validate_input(df: pd.DataFrame) -> None:
-    """Validate the input DataFrame."""
+    The features are calculated separately for each token.
 
-    if not isinstance(df, pd.DataFrame):
-        raise TypeError("Input must be a pandas DataFrame.")
+    Returns
+    -------
+    pd.DataFrame
+        Original DataFrame with DailyReturn, Return5,
+        Return20 and Momentum added.
+    """
 
-    missing = [
-        column
-        for column in REQUIRED_COLUMNS
-        if column not in df.columns
-    ]
+    required_columns = {"token", "close"}
+
+    missing = required_columns - set(df.columns)
 
     if missing:
         raise ValueError(
-            f"Missing required columns: {missing}"
+            f"Missing required columns: {sorted(missing)}"
         )
 
+    df = df.copy()
 
-def add_daily_return(df: pd.DataFrame) -> pd.DataFrame:
-    """Add one-day percentage return."""
+    close = df.groupby("token")["close"]
 
-    result = df.copy()
+    df["DailyReturn"] = close.pct_change(1)
 
-    result["DailyReturn"] = (
-        result["close"].pct_change()
+    df["Return5"] = close.pct_change(5)
+
+    df["Return20"] = close.pct_change(20)
+
+    df["Momentum"] = (
+        df["close"] - close.shift(20)
     )
 
-    return result
-
-
-def add_return5(df: pd.DataFrame) -> pd.DataFrame:
-    """Add five-day percentage return."""
-
-    result = df.copy()
-
-    result["Return5"] = (
-        result["close"].pct_change(5)
-    )
-
-    return result
-
-
-def add_return20(df: pd.DataFrame) -> pd.DataFrame:
-    """Add twenty-day percentage return."""
-
-    result = df.copy()
-
-    result["Return20"] = (
-        result["close"].pct_change(20)
-    )
-
-    return result
-
-
-def add_momentum(df: pd.DataFrame) -> pd.DataFrame:
-    """Add momentum feature."""
-
-    result = df.copy()
-
-    result["Momentum"] = (
-        result["close"]
-        - result["close"].shift(20)
-    )
-
-    return result
-
-
-def add_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Add all Student A engineered features."""
-
-    _validate_input(df)
-
-    result = df.copy()
-
-    # Sort chronologically when a date column is available.
-    if "date" in result.columns:
-        result = result.sort_values("date")
-
-    result = add_daily_return(result)
-    result = add_return5(result)
-    result = add_return20(result)
-    result = add_momentum(result)
-
-    return result
+    return df
